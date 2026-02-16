@@ -21,6 +21,7 @@ function App() {
   const activeWorkspaceId = useWorkspaceStore(state => state.activeWorkspaceId)
   const createWorkspace = useWorkspaceStore(state => state.createWorkspace)
   const setActiveWorkspace = useWorkspaceStore(state => state.setActiveWorkspace)
+  const addAgentToWorkspace = useWorkspaceStore(state => state.addAgentToWorkspace)
 
   // Agent store
   const agentsMap = useAgentStore(state => state.agents)
@@ -51,6 +52,8 @@ function App() {
       model: 'claude-sonnet-4-5-20250929',
       provider: 'anthropic'
     })
+
+    addAgentToWorkspace(activeWorkspaceId, agentId)
 
     // Create a conversation for the agent
     const conversationId = createConversation(activeWorkspaceId, agentId)
@@ -141,7 +144,9 @@ function App() {
                   }`}
                 >
                   <p className="font-medium text-sm text-gray-900 dark:text-white">{workspace.name}</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">{workspace.agentIds.length} agents</p>
+                  <p className="text-xs text-gray-700 dark:text-gray-300">
+                    {Array.from(agentsMap.values()).filter(a => a.workspaceId === workspace.id).length} agents
+                  </p>
                 </div>
               ))}
             </div>
@@ -198,14 +203,14 @@ function App() {
                   >
                     <div className="flex items-center gap-2">
                       <div
-                        className="w-3 h-3 rounded-full"
+                        className="w-3 h-3 rounded-full shrink-0"
                         style={{ backgroundColor: agent.metadata?.color || '#999' }}
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {agent.name}
                         </p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                        <p className="text-xs text-gray-700 dark:text-gray-300 truncate">
                           {agent.model}
                         </p>
                       </div>
