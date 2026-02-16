@@ -281,15 +281,20 @@ export const useChatStore = create<ChatState>()(
     }),
     {
       name: 'branchgpt-chat-storage',
+      version: 1,
       storage: createJSONStorage(() => indexedDBStorage),
       // Custom serialization to handle Map
       partialize: state => ({
         conversations: Array.from(state.conversations.entries()),
         activeConversationId: state.activeConversationId
       }),
-      onRehydrateStorage: () => state => {
-        if (state && Array.isArray((state as any).conversations)) {
-          (state as any).conversations = new Map((state as any).conversations as [string, Conversation][])
+      merge: (persistedState: any, currentState) => {
+        return {
+          ...currentState,
+          ...persistedState,
+          conversations: Array.isArray(persistedState?.conversations)
+            ? new Map(persistedState.conversations as [string, Conversation][])
+            : new Map()
         }
       }
     }

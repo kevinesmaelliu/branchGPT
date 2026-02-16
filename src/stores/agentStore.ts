@@ -258,18 +258,23 @@ export const useAgentStore = create<AgentState>()(
     }),
     {
       name: 'branchgpt-agent-storage',
+      version: 1,
       storage: createJSONStorage(() => indexedDBStorage),
       // Custom serialization to handle Map
       partialize: state => ({
         agents: Array.from(state.agents.entries()),
         pendingActions: Array.from(state.pendingActions.entries())
       }),
-      onRehydrateStorage: () => state => {
-        if (state && Array.isArray((state as any).agents)) {
-          (state as any).agents = new Map((state as any).agents as [string, Agent][])
-        }
-        if (state && Array.isArray((state as any).pendingActions)) {
-          (state as any).pendingActions = new Map((state as any).pendingActions as [string, AgentAction[]][])
+      merge: (persistedState: any, currentState) => {
+        return {
+          ...currentState,
+          ...persistedState,
+          agents: Array.isArray(persistedState?.agents)
+            ? new Map(persistedState.agents as [string, Agent][])
+            : new Map(),
+          pendingActions: Array.isArray(persistedState?.pendingActions)
+            ? new Map(persistedState.pendingActions as [string, AgentAction[]][])
+            : new Map()
         }
       }
     }
