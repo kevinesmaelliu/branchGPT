@@ -181,15 +181,20 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     }),
     {
       name: 'branchgpt-workspace-storage',
+      version: 1,
       storage: createJSONStorage(() => indexedDBStorage),
       // Custom serialization to handle Map
       partialize: state => ({
         workspaces: Array.from(state.workspaces.entries()),
         activeWorkspaceId: state.activeWorkspaceId
       }),
-      onRehydrateStorage: () => state => {
-        if (state && Array.isArray((state as any).workspaces)) {
-          (state as any).workspaces = new Map((state as any).workspaces as [string, Workspace][])
+      merge: (persistedState: any, currentState) => {
+        return {
+          ...currentState,
+          ...persistedState,
+          workspaces: Array.isArray(persistedState?.workspaces)
+            ? new Map(persistedState.workspaces as [string, Workspace][])
+            : new Map()
         }
       }
     }
